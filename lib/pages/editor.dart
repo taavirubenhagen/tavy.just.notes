@@ -1,41 +1,49 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:only_notes/db/db.dart';
-import 'package:only_notes/only/brand.dart';
-import 'package:only_notes/only/buttons.dart';
-import 'package:only_notes/only/colors.dart';
-import 'package:only_notes/only/icons.dart';
-import 'package:only_notes/only/sizes.dart';
-import 'package:only_notes/only/text.dart';
-import 'package:only_notes/only/widgets.dart';
+import 'package:just_notes/db/db.dart';
+import 'package:just_notes/just/just.dart';
+import 'package:just_notes/main.dart';
+import 'package:just_notes/util/util.dart';
 
 
+// ignore: must_be_immutable
 class Editor extends StatefulWidget {
-  const Editor({super.key});
+  Editor(this.dateId, this.data, this.setParentState, {super.key});
 
+  String? dateId;
+  Map<String, dynamic>? data;
+  Function() setParentState;
+  
   @override
   State<Editor> createState() => _EditorState();
 }
 
 class _EditorState extends State<Editor> {
   
-  final _titleController = TextEditingController(
-    text: DateTime.now().toIso8601String(),
-  );
+  final _titleController = TextEditingController();
   final _titleFocusNode = FocusNode();
   
   final _bodyController = TextEditingController();
   final _bodyFocusNode = FocusNode();
   
+  //bool _locked = false;
+  
+  @override
+  initState() {
+    super.initState();
+    _titleController.text = widget.data?["title"] ?? "";
+    _bodyController.text = widget.data?["body"] ?? "";
+  }
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: JustColors.background,
       appBar: AppBar(
         toolbarHeight: 0,
         backgroundColor: Colors.transparent,
         systemOverlayStyle: SystemUiOverlayStyle(
-          statusBarIconBrightness: Brightness.dark,
+          statusBarIconBrightness: lightMode ? Brightness.dark : Brightness.light,
         ),
       ),
       body: SafeArea(
@@ -43,82 +51,122 @@ class _EditorState extends State<Editor> {
           children: <Widget>[
             Container(
               height: 80,
-              padding: EdgeInsets.symmetric(
+              padding: const EdgeInsets.symmetric(
                 horizontal: 0,
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  OnlyButtons.onlyAppBarIcon(
-                    data: Icons.lock_outlined,
-                    onTap: () => !_bodyFocusNode.hasFocus
-                    ? Navigator.pop(context)
-                    : _bodyFocusNode.unfocus(),
+                  JustIcons.justAppBarIcon(
+                    data: Icons.remove_circle_outline_outlined,
+                    onTap: () {
+                      if (_titleController.text == "" && _bodyController.text == "" && widget.dateId == null) {
+                        Navigator.pop(context);
+                        return;
+                      }
+                      return JustWidgets.showBottomSheet(
+                        context: context,
+                        title: "Delete ${readableTitle(widget.data, headline: false)}?",
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 32,
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: JustButtons.text(
+                                  secondary: true,
+                                  onTap: () => Navigator.pop(context),
+                                  title: "Cancel",
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: JustButtons.text(
+                                  onTap: () async {
+                                    Navigator.pop(context);
+                                    Navigator.pop(context);
+                                    await deleteNote(widget.dateId);
+                                    widget.setParentState();
+                                  },
+                                  title: "Delete",
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
                   ),
                   Container(
-                    width: OnlySizes.widthOf(context) - 128,
-                    height: OnlySizes.baseBarHeight,
+                    width: JustSizes.widthOf(context) - 128,
+                    height: JustSizes.baseBarHeight,
                     alignment: Alignment.center,
                     child: TextFormField(
                       controller: _titleController,
                       focusNode: _titleFocusNode,
                       maxLines: 1,
                       decoration: InputDecoration.collapsed(
-                        hintStyle: OnlyText.smallHeadingStyle.copyWith(
-                          color: OnlyColors.secondary,
+                        hintStyle: JustText.smallHeadingStyle.copyWith(
+                          color: JustColors.secondaryOnBackground,
                         ),
                         hintText: "Note title",
                       ),
                       textAlign: TextAlign.center,
-                      style: OnlyText.smallHeadingStyle,
-                      cursorColor: OnlyColors.accent,
+                      style: JustText.smallHeadingStyle,
                       onTap: () => setState(() {}),
                       onChanged: (_) => setState(() {}),
                     ),
                   ),
-                  OnlyButtons.onlyAppBarIcon(
+                  JustIcons.justAppBarIcon(
                     right: true,
-                    data: _titleFocusNode.hasFocus || _bodyFocusNode.hasFocus ? Icons.check_outlined : Icons.close_outlined,
-                    onTap: _titleFocusNode.hasFocus || _bodyFocusNode.hasFocus
-                    ? () async {
-                      debugPrint(_bodyController.value.text);
-                      _titleFocusNode.unfocus();
-                      _bodyFocusNode.unfocus();
-                      debugPrint("Here");
-                      debugPrint(( await accessNotes(
-                        dateId: "0",
+                    data: ( _titleFocusNode.hasFocus || _bodyFocusNode.hasFocus )
+                    && ( _bodyController.text != "" || _titleController.text != "" )
+                    ? Icons.check_outlined
+                    : Icons.close_outlined,
+                    onTap: () async {
+                      if (_titleFocusNode.hasFocus || _bodyFocusNode.hasFocus) {
+                        _titleFocusNode.unfocus();
+                        _bodyFocusNode.unfocus();
+                      }
+                      if (_titleController.text == "" && _bodyController.text == "" && widget.dateId == null) {
+                        Navigator.pop(context);
+                        return;
+                      }
+                      await writeNote(
+                        dateId: widget.dateId ?? DateTime.now().toIso8601String(),
                         title: _titleController.text,
-                        body:_titleController.text,
-                        locked: false,
-                      ) )?.keys.toString());
-                    }
-                    : () => Navigator.pop(context),
+                        body: _bodyController.text,
+                        locked: false,//_locked,
+                      );
+                      // ignore: use_build_context_synchronously
+                      Navigator.pop(context);
+                    },
                   ),
                 ],
               ),
             ),
-            OnlyWidgets.divider,
+            JustWidgets.divider,
             Container(
-              width: OnlySizes.widthOf(context),
-              height: OnlySizes.heightOf(context) - OnlySizes.baseBarHeight - MediaQuery.viewInsetsOf(context).bottom,
-              padding: EdgeInsets.symmetric(
+              width: JustSizes.widthOf(context),
+              height: JustSizes.heightOf(context) - JustSizes.baseBarHeight - MediaQuery.viewInsetsOf(context).bottom,
+              padding: const EdgeInsets.symmetric(
                 horizontal: 16,
                 vertical: 32,
               ),
               child: TextFormField(
                 controller: _bodyController,
                 focusNode: _bodyFocusNode,
-                style: TextStyle(
-                  fontSize: OnlyText.editorSize,
-                ),
+                minLines: 1,
+                maxLines: 1024,
+                textAlign: TextAlign.justify,
+                style: JustText.editorStyle,
                 decoration: InputDecoration.collapsed(
-                  hintStyle: TextStyle(
-                    fontSize: OnlyText.editorSize,
-                    color: OnlyColors.secondary,
+                  hintStyle: JustText.editorStyle.copyWith(
+                    color: JustColors.secondaryOnBackground,
                   ),
                   hintText: _bodyFocusNode.hasFocus ? "Write here :)" : "Tap to edit",
                 ),
-                cursorColor: OnlyColors.accent,
                 onTap: () => setState(() {}),
                 onChanged: (_) => setState(() {}),
               ),

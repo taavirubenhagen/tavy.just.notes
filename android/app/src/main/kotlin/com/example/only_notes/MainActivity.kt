@@ -1,5 +1,5 @@
-package com.example.only_notes
+package tavy.just.notes
 
-import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.android.FlutterFragmentActivity
 
-class MainActivity : FlutterActivity()
+class MainActivity : FlutterFragmentActivity()

@@ -1,6 +1,6 @@
 {
-    "name": "only_notes",
-    "short_name": "only_notes",
+    "name": "just_notes",
+    "short_name": "just_notes",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

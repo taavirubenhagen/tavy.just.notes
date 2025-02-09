@@ -1,4 +1,4 @@
-# only_notes
+# just_notes
 
 A new Flutter project.
 

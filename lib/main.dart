@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:only_notes/pages/home.dart';
+import 'package:just_notes/pages/home.dart';
+
+
+bool lightMode = !false;
 
 
 void main() {
@@ -8,7 +11,7 @@ void main() {
       title: 'Only Notes',
       theme: ThemeData(),
       debugShowCheckedModeBanner: false,
-      home: Home(),
+      home: const Home(),
     ),
   );
 }
