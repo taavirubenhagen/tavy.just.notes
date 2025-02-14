@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:iconoir_flutter/iconoir_flutter.dart' as icons;
 import 'package:just_notes/just/just.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 
 abstract class JBrand {
   
-  static showBottomSheet(BuildContext context) => JustWidgets.showBottomSheet(
+  static showBottomSheet(BuildContext context) => JustDialogs.showBottomSheet(
     context: context,
     title: "My Other Work",
     child: Column(
@@ -14,7 +15,7 @@ abstract class JBrand {
           context: context,
           title: "Presentation Master 2",
           subtitle: "An all-in-one presentation controller",
-          action: JustButtonAction.external,
+          iconData: Icons.open_in_new_outlined,
           onTap: () => justLaunchUrl("https://play.google.com/store/apps/details?id=tavy.presenter.presentation_master_2"),
         ),
         Container(
@@ -81,18 +82,19 @@ abstract class JBrand {
           child: Row(
             children: [
               GestureDetector(
-                // TODO: Adapt to this app
-                //onTap: () => justLaunchUrl("https://play.google.com/store/apps/details?id=tavy.presenter.presentation_master_2"),
+                onTap: () => justLaunchUrl("https://play.google.com/store/apps/details?id=tavy.just.notes"),
                 child: Container(
                   width: ( JustSizes.widthOf(context) - 64 ) / 3,
                   height: 32,
                   alignment: Alignment.centerLeft,
-                  child: JustText.smallButtonTitle("1.0.0"),
+                  child: FutureBuilder(
+                    future: PackageInfo.fromPlatform(),
+                    builder: (context, snapshot) => JustText.smallButtonTitle(snapshot.data?.version ?? ""),
+                  ),
                 ),
               ),
               GestureDetector(
-                // TODO: Adapt to this app
-                onTap: () => justLaunchUrl("https://rubenhagen.com/legal/presenter"),
+                onTap: () => justLaunchUrl("https://rubenhagen.com/legal/just"),
                 child: Container(
                   width: ( JustSizes.widthOf(context) - 64 ) / 3,
                   height: 32,
@@ -101,7 +103,6 @@ abstract class JBrand {
                 ),
               ),
               GestureDetector(
-                // TODO: Adapt to this app
                 onTap: () => justLaunchUrl("https://rubenhagen.com/legal/imprint"),
                 child: Container(
                   width: ( JustSizes.widthOf(context) - 64 ) / 3,

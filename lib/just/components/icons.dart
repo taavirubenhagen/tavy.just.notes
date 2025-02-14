@@ -7,25 +7,20 @@ abstract class JIcons {
   static Widget baseTextIcon(IconData data, {bool secondary = false}) => Icon(
     data,
     size: JustText.baseSize,
-    color: secondary ? JustColors.secondaryOnBackground : JustColors.foreground,
+    color: secondary ? JustColors.secondaryForeground : JustColors.foreground,
   );
   
-  static Widget mediumIcon(IconData data, {bool secondary = false}) => Icon(
+  static Widget mediumIcon(IconData data, {Color? color}) => Icon(
     data,
     size: 24,
-    color: secondary ? JustColors.secondaryOnBackground : JustColors.foreground,
+    color: color ?? JustColors.foreground,
   );
-  
-  static actionIcon(JustButtonAction action) => switch (action) {
-    JustButtonAction.delete => Icons.remove_circle_outline_outlined,
-    JustButtonAction.external => Icons.open_in_new_outlined,
-    JustButtonAction.next => Icons.arrow_forward_outlined,
-  };
   
   static GestureDetector justAppBarIcon({
     bool right = false,
+    Color? color,
     required IconData data,
-    required Function() onTap,
+    Function()? onTap,
   }) => GestureDetector(
     onTap: onTap,
     child: Container(
@@ -38,6 +33,11 @@ abstract class JIcons {
       alignment: right ? Alignment.centerRight : Alignment.centerLeft,
       child: JustIcons.mediumIcon(
         data,
+        color: color ?? (
+          onTap == null
+          ? JustColors.secondaryForeground
+          : JustColors.foreground
+        ),
       ),
     ),
   );

@@ -1,7 +1,7 @@
 name: just_notes
 description: "Just notes."
 publish_to: 'none'
-version: 1.0.0+1
+version: 0.1.0+2
 
 environment:
   sdk: ^3.7.0-323.1.beta
@@ -15,6 +15,10 @@ dependencies:
   iconoir_flutter: ^7.10.1
   url_launcher: ^6.3.1
   local_auth: ^2.3.0
+  package_info_plus: ^8.2.1
+  path_provider: ^2.1.5
+  permission_handler: ^11.3.1
+  open_file: ^3.5.10
 
 dev_dependencies:
   flutter_test:
